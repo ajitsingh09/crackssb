@@ -3,7 +3,7 @@ import { Box, Drawer, List, ListItem, ListItemText, IconButton, AppBar, Toolbar,
 import MenuIcon from '@mui/icons-material/Menu';
 import Link from 'next/link';
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 export default function Layout({ children }) {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -21,7 +21,11 @@ export default function Layout({ children }) {
     ];
 
     const drawer = (
-        <List>
+        <List sx={{
+            height: '100%',
+            bgcolor: 'rgba(0, 0, 0, 0.9)',
+            py: 0
+        }}>
             {menuItems.map((item) => (
                 <ListItem
                     button
@@ -30,9 +34,22 @@ export default function Layout({ children }) {
                     href={item.href}
                     sx={{
                         color: 'white',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                        py: 3,
                         '& .MuiListItemText-primary': {
-                            fontSize: '1.2rem',
-                        }
+                            fontSize: '1.4rem',
+                            textAlign: 'center',
+                            fontWeight: 300,
+                        },
+                        '&:hover': {
+                            bgcolor: 'rgba(255, 255, 255, 0.1)',
+                            borderColor: 'rgba(255, 255, 255, 0.3)',
+                            '& .MuiListItemText-primary': {
+                                fontWeight: 400,
+                            }
+                        },
+                        transition: 'all 0.3s ease',
                     }}
                 >
                     <ListItemText primary={item.text} />
@@ -43,7 +60,13 @@ export default function Layout({ children }) {
 
     return (
         <Box sx={{ display: 'flex' }}>
-            <AppBar position="fixed">
+            <AppBar
+                position="fixed"
+                sx={{
+                    bgcolor: 'rgba(0, 0, 0, 0.9)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                }}
+            >
                 <Toolbar>
                     <IconButton
                         color="inherit"
@@ -69,7 +92,11 @@ export default function Layout({ children }) {
                         keepMounted: true,
                     }}
                     sx={{
-                        '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+                        '& .MuiDrawer-paper': {
+                            boxSizing: 'border-box',
+                            width: drawerWidth,
+                            bgcolor: 'rgba(0, 0, 0, 0.9)',
+                        },
                     }}
                 >
                     {drawer}

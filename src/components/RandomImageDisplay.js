@@ -1,18 +1,29 @@
-import { useState, useEffect } from 'react';
-import { Box, Button, Typography, CircularProgress, IconButton } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Button, Typography, CircularProgress, IconButton, Switch, FormControlLabel, TextField } from '@mui/material';
 import Image from 'next/image';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function RandomImageDisplay({ imageCount }) {
     const [images, setImages] = useState([]);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isStarted, setIsStarted] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+    const [timeLeft, setTimeLeft] = useState(300);
     const [isFinished, setIsFinished] = useState(false);
+    const [showTimer, setShowTimer] = useState(true);
+    const [countdown, setCountdown] = useState(null);
+    const [imageDuration, setImageDuration] = useState(300); // Default 5 minutes
+    const audioRef = useRef(null);
 
     useEffect(() => {
-        // Import all images and shuffle them
+        audioRef.current = new Audio('/sounds/click.mp3');
+        audioRef.current.volume = 1;
+    }, []);
+
+    useEffect(() => {
         const importImages = async () => {
             const imageContext = require.context('../assets', false, /\.(png|jpe?g|svg)$/);
             const imageList = imageContext.keys().map((key) => ({
@@ -20,7 +31,6 @@ export default function RandomImageDisplay({ imageCount }) {
                 alt: key.replace('./', '').split('.')[0]
             }));
 
-            // Shuffle array and take required number of images
             const shuffled = [...imageList].sort(() => 0.5 - Math.random());
             setImages(shuffled.slice(0, imageCount));
         };
@@ -30,14 +40,14 @@ export default function RandomImageDisplay({ imageCount }) {
 
     useEffect(() => {
         let timer;
-        if (isStarted && !isFinished) {
+        if (isStarted && !isFinished && countdown === null) {
             timer = setInterval(() => {
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
-                        // Time's up for current image
                         if (currentImageIndex < images.length - 1) {
+                            audioRef.current?.play();
                             setCurrentImageIndex(prev => prev + 1);
-                            return 300; // Reset timer for next image
+                            return imageDuration;
                         } else {
                             setIsFinished(true);
                             clearInterval(timer);
@@ -49,27 +59,50 @@ export default function RandomImageDisplay({ imageCount }) {
             }, 1000);
         }
         return () => clearInterval(timer);
-    }, [isStarted, currentImageIndex, images.length, isFinished]);
+    }, [isStarted, currentImageIndex, images.length, isFinished, countdown, imageDuration]);
 
     const handleStart = () => {
-        setIsStarted(true);
+        setTimeLeft(imageDuration);
+        setCountdown(5);
+        const countdownTimer = setInterval(() => {
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(countdownTimer);
+                    setIsStarted(true);
+                    return null;
+                }
+                return prev - 1;
+            });
+        }, 1000);
     };
 
     const handlePrevious = (e) => {
         e.stopPropagation();
         if (currentImageIndex > 0) {
+            audioRef.current?.play();
             setCurrentImageIndex(prev => prev - 1);
-            setTimeLeft(300); // Reset timer
+            setTimeLeft(imageDuration);
         }
     };
 
     const handleNext = (e) => {
         e.stopPropagation();
         if (currentImageIndex < images.length - 1) {
+            audioRef.current?.play();
             setCurrentImageIndex(prev => prev + 1);
-            setTimeLeft(300); // Reset timer
+            setTimeLeft(imageDuration);
         } else {
             setIsFinished(true);
+        }
+    };
+
+    const handleDurationChange = (event) => {
+        const value = parseInt(event.target.value);
+        if (value > 0) {
+            setImageDuration(value);
+            if (!isStarted) {
+                setTimeLeft(value);
+            }
         }
     };
 
@@ -77,6 +110,29 @@ export default function RandomImageDisplay({ imageCount }) {
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
+    const handleReset = () => {
+        // Reset all states
+        setIsStarted(false);
+        setCurrentImageIndex(0);
+        setTimeLeft(imageDuration);
+        setIsFinished(false);
+        setCountdown(null);
+
+        // Fetch new random images
+        const importImages = async () => {
+            const imageContext = require.context('../assets', false, /\.(png|jpe?g|svg)$/);
+            const imageList = imageContext.keys().map((key) => ({
+                src: imageContext(key).default,
+                alt: key.replace('./', '').split('.')[0]
+            }));
+
+            const shuffled = [...imageList].sort(() => 0.5 - Math.random());
+            setImages(shuffled.slice(0, imageCount));
+        };
+
+        importImages();
     };
 
     if (images.length === 0) {
@@ -88,19 +144,106 @@ export default function RandomImageDisplay({ imageCount }) {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 3
+            gap: 3,
+            position: 'relative',
+            width: '100%'
         }}>
-            {!isStarted ? (
-                <Button
-                    variant="contained"
-                    onClick={handleStart}
+            {(isStarted || isFinished) && (
+                <IconButton
+                    onClick={handleReset}
                     sx={{
-                        fontSize: '1.2rem',
-                        padding: '12px 24px'
+                        position: 'absolute',
+                        right: 0,
+                        top: 0,
+                        margin: '16px',
+                        bgcolor: 'rgba(255, 0, 0, 0.2)',
+                        color: '#ff0000',
+                        border: '2px solid #ff0000',
+                        '&:hover': {
+                            bgcolor: 'rgba(255, 0, 0, 0.3)',
+                        },
+                        zIndex: 1,
+                        width: '48px',
+                        height: '48px',
+                        '& .MuiSvgIcon-root': {
+                            fontSize: '28px',
+                            fontWeight: 'bold'
+                        }
                     }}
                 >
-                    Start
-                </Button>
+                    <CloseIcon />
+                </IconButton>
+            )}
+
+            {!isStarted ? (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '600px',
+                        width: '100%',
+                        gap: 3
+                    }}
+                >
+                    {countdown === null ? (
+                        <>
+                            <IconButton
+                                onClick={handleStart}
+                                sx={{
+                                    width: '120px',
+                                    height: '120px',
+                                    border: '3px solid white',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                    }
+                                }}
+                            >
+                                <PlayArrowIcon sx={{ fontSize: '64px' }} />
+                            </IconButton>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={showTimer}
+                                        onChange={() => setShowTimer(prev => !prev)}
+                                        color="primary"
+                                    />
+                                }
+                                label="Show Timer"
+                            />
+                            <TextField
+                                type="number"
+                                label="Seconds per Image"
+                                value={imageDuration}
+                                onChange={handleDurationChange}
+                                variant="outlined"
+                                sx={{
+                                    width: '200px',
+                                    '& .MuiOutlinedInput-root': {
+                                        color: 'white',
+                                        '& fieldset': {
+                                            borderColor: 'rgba(255, 255, 255, 0.5)',
+                                        },
+                                        '&:hover fieldset': {
+                                            borderColor: 'white',
+                                        },
+                                    },
+                                    '& .MuiInputLabel-root': {
+                                        color: 'rgba(255, 255, 255, 0.7)',
+                                    },
+                                }}
+                                InputProps={{
+                                    inputProps: { min: 1 }
+                                }}
+                            />
+                        </>
+                    ) : (
+                        <Typography variant="h1" sx={{ fontSize: '120px' }}>
+                            {countdown}
+                        </Typography>
+                    )}
+                </Box>
             ) : isFinished ? (
                 <Typography variant="h4" component="h2">
                     Session Complete!
@@ -113,7 +256,7 @@ export default function RandomImageDisplay({ imageCount }) {
                             overflow: 'hidden',
                             position: 'relative',
                             width: '100%',
-                            height: 588,
+                            height: 600,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -170,9 +313,11 @@ export default function RandomImageDisplay({ imageCount }) {
                             <ChevronRightIcon />
                         </IconButton>
                     </Box>
-                    <Typography variant="h4" component="div">
-                        Time Remaining: {formatTime(timeLeft)}
-                    </Typography>
+                    {showTimer && (
+                        <Typography variant="h4" component="div">
+                            Time Remaining: {formatTime(timeLeft)}
+                        </Typography>
+                    )}
                     <Typography variant="h6" component="div">
                         Image {currentImageIndex + 1} of {images.length}
                     </Typography>

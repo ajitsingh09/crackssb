@@ -3,9 +3,9 @@ import RandomImageDisplay from "../components/RandomImageDisplay";
 
 export default function RandomFive() {
     return (
-        <Box>
+        <Box sx={{ textAlign: 'center' }}>
             <Typography variant="h3" component="h1" gutterBottom>
-                Random Five Page
+                Five Random Images
             </Typography>
             <RandomImageDisplay imageCount={5} />
         </Box>
