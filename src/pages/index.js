@@ -15,7 +15,8 @@ export default function Home() {
     return (
         <Box
             sx={{
-                minHeight: 'calc(100vh - 100px)',
+                height: '80vh',
+                maxHeight: '80vh',
                 background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(45,45,45,0.9) 100%)',
                 borderRadius: '20px',
                 display: 'flex',

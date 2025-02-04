@@ -144,9 +144,12 @@ export default function RandomImageDisplay({ imageCount }) {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 3,
+            gap: 2,
             position: 'relative',
-            width: '100%'
+            width: '100%',
+            height: '75vh',
+            maxHeight: '80vh',
+            overflow: 'hidden'
         }}>
             {(isStarted || isFinished) && (
                 <IconButton
@@ -155,7 +158,7 @@ export default function RandomImageDisplay({ imageCount }) {
                         position: 'absolute',
                         right: 0,
                         top: 0,
-                        margin: '16px',
+                        margin: '8px',
                         bgcolor: 'rgba(255, 0, 0, 0.2)',
                         color: '#ff0000',
                         border: '2px solid #ff0000',
@@ -163,10 +166,10 @@ export default function RandomImageDisplay({ imageCount }) {
                             bgcolor: 'rgba(255, 0, 0, 0.3)',
                         },
                         zIndex: 1,
-                        width: '48px',
-                        height: '48px',
+                        width: '40px',
+                        height: '40px',
                         '& .MuiSvgIcon-root': {
-                            fontSize: '28px',
+                            fontSize: '24px',
                             fontWeight: 'bold'
                         }
                     }}
@@ -182,9 +185,9 @@ export default function RandomImageDisplay({ imageCount }) {
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        height: '600px',
+                        height: '500px',
                         width: '100%',
-                        gap: 3
+                        gap: 2
                     }}
                 >
                     {countdown === null ? (
@@ -192,15 +195,15 @@ export default function RandomImageDisplay({ imageCount }) {
                             <IconButton
                                 onClick={handleStart}
                                 sx={{
-                                    width: '120px',
-                                    height: '120px',
+                                    width: '100px',
+                                    height: '100px',
                                     border: '3px solid white',
                                     '&:hover': {
                                         backgroundColor: 'rgba(255, 255, 255, 0.1)',
                                     }
                                 }}
                             >
-                                <PlayArrowIcon sx={{ fontSize: '64px' }} />
+                                <PlayArrowIcon sx={{ fontSize: '54px' }} />
                             </IconButton>
                             <FormControlLabel
                                 control={
@@ -219,7 +222,7 @@ export default function RandomImageDisplay({ imageCount }) {
                                 onChange={handleDurationChange}
                                 variant="outlined"
                                 sx={{
-                                    width: '200px',
+                                    width: '180px',
                                     '& .MuiOutlinedInput-root': {
                                         color: 'white',
                                         '& fieldset': {
@@ -239,7 +242,7 @@ export default function RandomImageDisplay({ imageCount }) {
                             />
                         </>
                     ) : (
-                        <Typography variant="h1" sx={{ fontSize: '120px' }}>
+                        <Typography variant="h1" sx={{ fontSize: '100px' }}>
                             {countdown}
                         </Typography>
                     )}
@@ -256,7 +259,7 @@ export default function RandomImageDisplay({ imageCount }) {
                             overflow: 'hidden',
                             position: 'relative',
                             width: '100%',
-                            height: 600,
+                            height: '500px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -287,8 +290,8 @@ export default function RandomImageDisplay({ imageCount }) {
                         <Image
                             src={images[currentImageIndex].src}
                             alt={images[currentImageIndex].alt}
-                            width={580}
-                            height={580}
+                            width={480}
+                            height={480}
                             style={{
                                 objectFit: 'contain',
                             }}
@@ -314,11 +317,11 @@ export default function RandomImageDisplay({ imageCount }) {
                         </IconButton>
                     </Box>
                     {showTimer && (
-                        <Typography variant="h4" component="div">
+                        <Typography variant="h5" component="div">
                             Time Remaining: {formatTime(timeLeft)}
                         </Typography>
                     )}
-                    <Typography variant="h6" component="div">
+                    <Typography variant="subtitle1" component="div">
                         Image {currentImageIndex + 1} of {images.length}
                     </Typography>
                 </>
